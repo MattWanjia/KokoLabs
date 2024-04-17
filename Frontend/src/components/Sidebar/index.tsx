@@ -6,7 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { DatePicker, Space } from "antd";
+import { DatePicker as Dp, Space } from "antd";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { useRouter } from "next/navigation";
+
 import {
   Modal,
   ModalOverlay,
@@ -30,6 +34,7 @@ import {
   fetchCategories,
   uploadCategory,
   uploadExpense,
+  uploadGoal,
   uploadIncome,
 } from "@/api";
 import { message } from "antd";
@@ -43,7 +48,10 @@ interface SidebarProps {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
 
+  const router = useRouter()
+
   //const { categories, setCategories } = useGlobalContext();
+  const [startDate, setStartDate] = useState(new Date());
   const [categories, setCategories] = useState([]);
   const [selectedCat, setSelectedCat] = useState({
     select: false,
@@ -115,10 +123,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
   );
 
-  const onDateChange = (date: any, dateString: any) => {
-    console.log(date, dateString);
-  };
-
   // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -166,7 +170,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const handleIncomeUpload = async () => {
     const res = await uploadIncome({ income })
-      .then(() => message.success("Success"))
+      .then(() => {message.success("Success")})
       .catch((err) => message.error("Ooops! Something went wrong"));
 
     onIncomeClose();
@@ -179,7 +183,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       .then(() => message.success("Success"))
       .catch((err) => message.error("Ooops! Something went wrong"));
 
-      onExpenseClose()
+    onExpenseClose();
+  };
+
+  const handleGoalUpload = async () => {
+    //console.log(goal);
+
+    const isoDate = startDate.toISOString();
+
+    // Extract only the date part (YYYY-MM-DD) from the ISO string
+    const djangoDate = isoDate.split("T")[0];
+
+    setGoal({ ...goal, date_due: djangoDate });
+
+    //console.log(djangoDate)
+
+    const res = await uploadGoal({ goal })
+      .then(() => message.success("Success"))
+      .catch((err) => message.error("Ooops! Something went wrong"));
+
+    onGoalClose();
   };
 
   return (
@@ -380,8 +403,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               </div>
             </ul>
           </div>
-
-          
         </nav>
         {/* <!-- Sidebar Menu --> */}
       </div>
@@ -546,20 +567,39 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
           <ModalBody>
             <div className="flex w-full flex-col space-y-2">
               <input
-                className="border-1 w-full rounded-md border-black p-1"
+                value={goal.description}
+                onChange={(e) =>
+                  setGoal({ ...goal, description: e.target.value })
+                }
+                className="border-gray-500 w-full rounded-md border-2 p-1"
                 type="text"
                 placeholder="Enter description"
               />
               <input
-                className="w-full rounded-md p-1"
+                value={goal.amount_expected}
+                onChange={(e) =>
+                  setGoal({ ...goal, amount_expected: e.target.value })
+                }
+                className="border-gray-500 w-full rounded-md border-2 p-1"
                 type="number"
                 placeholder="Enter amount"
               />
-              <DatePicker onChange={onDateChange} />
+              <span>
+                <p>Select Date</p>
+                <DatePicker
+                  className="border-gray-500 w-full border-2"
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                />
+              </span>
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" variant="ghost">
+            <Button
+              onClick={handleGoalUpload}
+              colorScheme="blue"
+              variant="ghost"
+            >
               Upload
             </Button>
           </ModalFooter>

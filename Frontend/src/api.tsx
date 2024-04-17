@@ -95,6 +95,8 @@ export const uploadIncome = async (details: any) => {
 };
 
 export const uploadGoal = async (details: any) => {
+  console.log(details)
+
   try {
     const response = await fetch(`${BASE_URL}lists/goal/`, {
       mode:'cors',
@@ -102,7 +104,7 @@ export const uploadGoal = async (details: any) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(details),
+      body: JSON.stringify(details.goal),
     });
     if (!response.ok) {
       throw new Error('Upload failed');
