@@ -28,4 +28,8 @@ Web App is now running on http://localhost:3000
 1. Next Js App Router with Tailwind css and Typescript
 2. Axios for data fetching to the server
 
+## FEEL FREE TO LOGIN WITH USER WITH DATA 
+username: admin
+password: Admin@12345
+
 ## Happy coding!

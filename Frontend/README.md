@@ -11,6 +11,10 @@ yarn run dev
 
 Web App is now running on http://localhost:3000
 
+## FEEL FREE TO LOGIN WITH USER WITH DATA 
+username: admin
+password: Admin@12345
+
 
 ## Techstack
 
