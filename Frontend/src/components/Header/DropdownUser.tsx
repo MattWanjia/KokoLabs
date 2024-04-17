@@ -47,7 +47,7 @@ const DropdownUser = () => {
     localStorage.removeItem('access')
     localStorage.removeItem('id')
 
-    router.push('/auth/signin')
+    router.push('/')
   }
 
   return (
@@ -68,7 +68,7 @@ const DropdownUser = () => {
           <Image
             width={112}
             height={112}
-            src={"/images/user/user-01.png"}
+            src={"/images/prof.jpg"}
             style={{
               width: "auto",
               height: "auto",

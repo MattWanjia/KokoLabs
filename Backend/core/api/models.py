@@ -41,14 +41,14 @@ class Goal(models.Model):
         return self.description
 
     def save(self, *args, **kwargs):
-        # Check if a goal already exists
-        existing_goal = Goal.objects.first()
-
-        # If a goal exists, update its attributes
-        if existing_goal:
-            existing_goal.description = self.description
-            existing_goal.amount_expected = self.amount_expected
-            existing_goal.date_due = self.date_due
-            existing_goal.save()
-        else:
-            super().save(*args, **kwargs)  # If no goal exists, proceed with the default save behavior
+        if not self.pk:  # If the instance is being created
+            # Check if a goal already exists for this user
+            existing_goal = Goal.objects.filter(user=self.user).first()
+            if existing_goal:
+                # If a goal exists, update its attributes
+                existing_goal.description = self.description
+                existing_goal.amount_expected = self.amount_expected
+                existing_goal.date_due = self.date_due
+                existing_goal.save()
+                return existing_goal
+        return super().save(*args, **kwargs)

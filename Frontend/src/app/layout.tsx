@@ -6,7 +6,8 @@ import "@/css/style.css";
 import React, { useEffect, useState } from "react";
 import Loader from "@/components/common/Loader";
 import { Metadata } from "next";
-
+import { ChakraProvider } from '@chakra-ui/react'
+import { GlobalProvider } from "@/context/GlobalContext";
 
 /*export const metadata: Metadata = {
   title: "PESA YANGU",
@@ -33,7 +34,7 @@ export default function RootLayout({
       <meta name="description" content="A financial management app" />
       <body suppressHydrationWarning={true}>
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
-          {loading ? <Loader /> : children}
+          <ChakraProvider>{loading ? <Loader /> : children}</ChakraProvider>
         </div>
       </body>
     </html>

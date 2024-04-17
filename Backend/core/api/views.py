@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
+from django.utils.timezone import now, timedelta
+
 
 
 @api_view(['POST'])
@@ -88,33 +90,32 @@ def get_monthly_totals(request):
     if user.is_authenticated:
         user_id = user.id
 
-        # Get monthly totals of expenses for the logged-in user
-        expense_totals = Expense.objects.filter(user_id=user_id).annotate(month=TruncMonth('time_spent')).values(
-            'month').annotate(total=Sum('amount'))
+        # Get the start date and end date for the last 5 months
+        today = now().date()
+        start_date = today - timedelta(days=6*30)  # Assuming each month has 30 days
+        end_date = today + timedelta(days=1)  # Add 1 day to include today
 
-        # Get monthly totals of incomes for the logged-in user
-        income_totals = Income.objects.filter(user_id=user_id).annotate(month=TruncMonth('time_added')).values(
-            'month').annotate(total=Sum('amount'))
+        # Initialize a dictionary to store monthly totals for expenses and incomes
+        monthly_totals = {}
 
-        # Combine expense and income totals into a single list
-        monthly_totals = []
-        for expense in expense_totals:
-            monthly_totals.append({'month': expense['month'], 'total_expense': expense['total'], 'total_income': 0})
+        # Loop through each month in the last 5 months
+        current_month = start_date.replace(day=1)
+        while current_month <= end_date.replace(day=1):
+            # Get the start and end of the current month
+            month_start = current_month
+            month_end = (current_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-        for income in income_totals:
-            # Check if there's already a monthly total for this month, if yes, update the income total
-            found = False
-            for mt in monthly_totals:
-                if mt['month'] == income['month']:
-                    mt['total_income'] = income['total']
-                    found = True
-                    break
-            # If not found, add a new entry for this month
-            if not found:
-                monthly_totals.append({'month': income['month'], 'total_expense': 0, 'total_income': income['total']})
+            # Get monthly totals of expenses for the logged-in user for the current month
+            expense_total = Expense.objects.filter(user_id=user_id, time_spent__range=[month_start, month_end]).aggregate(total=Sum('amount'))['total'] or 0
 
-        # Sort the monthly totals by month
-        monthly_totals.sort(key=lambda x: x['month'])
+            # Get monthly totals of incomes for the logged-in user for the current month
+            income_total = Income.objects.filter(user_id=user_id, time_added__range=[month_start, month_end]).aggregate(total=Sum('amount'))['total'] or 0
+
+            # Add monthly totals to the dictionary
+            monthly_totals[current_month.strftime('%B %Y')] = {'total_expense': expense_total, 'total_income': income_total}
+
+            # Move to the next month
+            current_month = (current_month + timedelta(days=32)).replace(day=1)
 
         return Response(monthly_totals)
     else:

@@ -15,6 +15,8 @@ const SignIn: React.FC = () => {
     password: "",
   });
 
+  const [passState, setPassState] = useState('password')
+
   const router = useRouter()
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,7 +36,7 @@ const SignIn: React.FC = () => {
   };
 
   const signInUser = async () => {
-    console.log(JSON.stringify(credentials))
+    //console.log(JSON.stringify(credentials))
 
     try {
       const response = await login(credentials);
@@ -57,6 +59,14 @@ const SignIn: React.FC = () => {
       // Optionally, you can display an error message to the user or perform other actions
     }
   };
+
+  const togglePass = () => {
+    if(passState == 'password'){
+      setPassState('text')
+    }else{
+      setPassState('password')
+    }
+  }
 
   return (
     <div>
@@ -257,12 +267,12 @@ const SignIn: React.FC = () => {
                     <input
                       value={credentials.password}
                       onChange={(e) => handlePassChange(e)}
-                      type="password"
+                      type={passState}
                       placeholder="6+ Characters, 1 Capital letter"
                       className="visible w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
-                    <span className="absolute right-4 top-4">
+                    <span onClick={togglePass} className="absolute right-4 top-4 cursor-pointer">
                       <svg
                         className="fill-current"
                         width="22"

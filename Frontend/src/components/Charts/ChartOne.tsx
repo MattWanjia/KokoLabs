@@ -1,5 +1,6 @@
+import { getMonthlyTotals } from "@/api";
 import { ApexOptions } from "apexcharts";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 
 const options: ApexOptions = {
@@ -111,7 +112,7 @@ const options: ApexOptions = {
       },
     },
     min: 0,
-    max: 100,
+    max: 500000,
   },
 };
 
@@ -120,10 +121,15 @@ interface ChartOneState {
     name: string;
     data: number[];
   }[];
+  chartTotals: any[];
 }
 
-const ChartOne: React.FC = () => {
-  const [state, setState] = useState<ChartOneState>({
+interface ChartProps {
+  //chartTotals: any[];
+}
+
+const ChartOne: React.FC<ChartProps> = () => {
+  /*const [state, setState] = useState<ChartOneState>({
     series: [
       {
         name: "Product One",
@@ -135,7 +141,67 @@ const ChartOne: React.FC = () => {
         data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 51],
       },
     ],
-  });
+  });*/
+
+  //const [labels, setLabels] = useState([])
+
+  const [state, setState] = useState({});
+  const [labels, setLabels] = useState<string[]>([]);
+  const [expenseSeries, setExpenseSeries] = useState<number[]>([]);
+  const [incomeSeries, setIncomeSeries] = useState<number[]>([]);
+  const [chartTotals, setChartTotals] = useState([])
+
+  useEffect(() => {
+
+    fetchLists()
+
+  }, []);
+
+  useEffect(() => {
+    //console.log(chartTotals);
+    const { labels, expenseSeries, incomeSeries } = extractData(chartTotals);
+
+    // Update the states
+    setLabels(labels);
+    setExpenseSeries(expenseSeries);
+    setIncomeSeries(incomeSeries);
+
+    //console.log(expenseSeries)
+
+
+  }, [chartTotals]);
+
+  const fetchLists = async () => {
+    try{
+      const res5 = await getMonthlyTotals()
+
+      console.log(res5)
+
+      setChartTotals(res5)
+    }catch(err){
+      console.log(err)
+    }
+    
+  }
+
+  const extractData = (data: any) => {
+    const labels = [];
+    const expenseSeries = [];
+    const incomeSeries = [];
+
+    for (const month in data) {
+      if (Object.hasOwnProperty.call(data, month)) {
+        const { total_expense, total_income } = data[month];
+        labels.push(month);
+        expenseSeries.push(total_expense);
+        incomeSeries.push(total_income);
+      }
+    }
+
+    console.log(labels)
+
+    return { labels, expenseSeries, incomeSeries };
+  };
 
   const handleReset = () => {
     setState((prevState) => ({
@@ -145,7 +211,7 @@ const ChartOne: React.FC = () => {
   handleReset;
 
   return (
-    <div className="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
+    <div className="col-span-12  rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
       <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
         <div className="flex w-full flex-wrap gap-3 sm:gap-5">
           <div className="flex min-w-47.5">
@@ -153,8 +219,8 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-primary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-primary">Total Revenue</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="font-semibold text-primary">Total Expenses</p>
+              {/*<p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>*/}
             </div>
           </div>
           <div className="flex min-w-47.5">
@@ -162,8 +228,8 @@ const ChartOne: React.FC = () => {
               <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-secondary"></span>
             </span>
             <div className="w-full">
-              <p className="font-semibold text-secondary">Total Sales</p>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="font-semibold text-secondary">Total Incomes</p>
+              {/*<p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>*/}
             </div>
           </div>
         </div>
@@ -186,7 +252,7 @@ const ChartOne: React.FC = () => {
         <div id="chartOne" className="-ml-5">
           <ReactApexChart
             options={options}
-            series={state.series}
+            series={[{name: "Total Expenses",data: expenseSeries,},{name: "Total Income",data: incomeSeries,}]}
             type="area"
             height={350}
             width={"100%"}
